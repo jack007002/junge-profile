@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>俊哥 - Jun Ge | Former Big Tech Engineer</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'tech-blue': '#007AFF',
+                        'tech-purple': '#5856D6',
+                        'tech-green': '#34C759',
+                        'tech-orange': '#FF9500',
+                        'tech-pink': '#FF2D92',
+                        'dark-bg': '#1C1C1E',
+                        'card-bg': '#2C2C2E'
+                    },
+                    fontFamily: {
+                        'chinese': ['-apple-system', 'BlinkMacSystemFont', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(0, 122, 255, 0.3); }
+            to { box-shadow: 0 0 30px rgba(0, 122, 255, 0.6); }
+        }
+
+        .gradient-border {
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(88, 86, 214, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+    </style>
+</head>
+
+<body class="bg-dark-bg text-white font-chinese min-h-screen">
+    <!-- Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-tech-blue opacity-10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-tech-purple opacity-10 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/2 left-1/2 w-72 h-72 bg-tech-green opacity-5 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 max-w-7xl mx-auto p-6 lg:p-8">
+        <!-- Header Section -->
+        <header class="mb-12 text-center">
+            <h1 class="text-6xl lg:text-8xl font-black mb-4 bg-gradient-to-r from-white via-tech-blue to-tech-purple bg-clip-text text-transparent animate-float">
+                俊哥
+            </h1>
+            <p class="text-xl lg:text-2xl text-gray-400 font-light tracking-wide">
+                Former Big Tech Engineer / 前大厂工程师
+            </p>
+            <div class="mt-6 w-32 h-1 bg-gradient-to-r from-tech-blue to-tech-purple mx-auto rounded-full"></div>
+        </header>
+
+        <!-- Bento Grid Layout -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 lg:gap-6">
+
+            <!-- Hero Card - Large -->
+            <div class="md:col-span-2 lg:col-span-2 xl:col-span-3 gradient-border glass-effect rounded-3xl p-8 animate-glow">
+                <div class="flex items-center mb-6">
+                    <div class="w-20 h-20 bg-gradient-to-br from-tech-blue to-tech-purple rounded-full flex items-center justify-center mr-6">
+                        <i class="fas fa-code text-3xl text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">关于我</h2>
+                        <p class="text-tech-blue">About Me</p>
+                    </div>
+                </div>
+                <p class="text-gray-300 text-lg leading-relaxed">
+                    前大厂资深工程师，专注于<span class="text-tech-blue font-semibold">全栈开发</span>与<span class="text-tech-green font-semibold">技术架构</span>。
+                    拥有丰富的大规模系统设计经验，热衷于用技术创造价值。
+                </p>
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <span class="px-4 py-2 bg-tech-blue/20 text-tech-blue rounded-full text-sm">Full Stack</span>
+                    <span class="px-4 py-2 bg-tech-green/20 text-tech-green rounded-full text-sm">Architecture</span>
+                    <span class="px-4 py-2 bg-tech-purple/20 text-tech-purple rounded-full text-sm">Innovation</span>
+                </div>
+            </div>
+
+            <!-- Skills Chart -->
+            <div class="md:col-span-1 lg:col-span-2 xl:col-span-2 gradient-border glass-effect rounded-3xl p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-chart-bar text-tech-orange text-xl mr-3"></i>
+                    <h3 class="text-xl font-bold">技能分布</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Experience -->
+            <div class="md:col-span-1 lg:col-span-2 xl:col-span-1 gradient-border glass-effect rounded-3xl p-6">
+                <div class="text-center">
+                    <i class="fas fa-briefcase text-4xl text-tech-purple mb-4"></i>
+                    <h3 class="text-2xl font-bold text-tech-purple">5+</h3>
+                    <p class="text-gray-400">年经验</p>
+                    <p class="text-sm text-gray-500 mt-2">Years Experience</p>
+                </div>
+            </div>
+
+            <!-- Projects -->
+            <div class="md:col-span-1 lg:col-span-1 xl:col-span-1 gradient-border glass-effect rounded-3xl p-6">
+                <div class="text-center">
+                    <i class="fas fa-rocket text-4xl text-tech-green mb-4 animate-float"></i>
+                    <h3 class="text-2xl font-bold text-tech-green">50+</h3>
+                    <p class="text-gray-400">项目</p>
+                    <p class="text-sm text-gray-500 mt-2">Projects</p>
+                </div>
+            </div>
+
+            <!-- Tech Stack -->
+            <div class="md:col-span-2 lg:col-span-3 xl:col-span-3 gradient-border glass-effect rounded-3xl p-6">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-layer-group text-tech-pink text-xl mr-3"></i>
+                    <h3 class="text-xl font-bold">技术栈</h3>
+                    <span class="text-sm text-gray-500 ml-2">Tech Stack</span>
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="text-center p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
+                        <i class="fab fa-js-square text-3xl text-yellow-400 mb-2"></i>
+                        <p class="text-sm">JavaScript</p>
+                    </div>
+                    <div class="text-center p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
+                        <i class="fab fa-python text-3xl text-blue-400 mb-2"></i>
+                        <p class="text-sm">Python</p>
+                    </div>
+                    <div class="text-center p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
+                        <i class="fab fa-react text-3xl text-cyan-400 mb-2"></i>
+                        <p class="text-sm">React</p>
+                    </div>
+                    <div class="text-center p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
+                        <i class="fas fa-database text-3xl text-green-400 mb-2"></i>
+                        <p class="text-sm">Database</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="md:col-span-2 lg:col-span-1 xl:col-span-2 gradient-border glass-effect rounded-3xl p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-tachometer-alt text-tech-orange text-xl mr-3"></i>
+                    <h3 class="text-xl font-bold">性能指标</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="md:col-span-1 lg:col-span-2 xl:col-span-1 gradient-border glass-effect rounded-3xl p-6">
+                <div class="text-center">
+                    <i class="fas fa-envelope text-4xl text-tech-blue mb-4"></i>
+                    <h3 class="text-lg font-bold">联系我</h3>
+                    <p class="text-sm text-gray-500 mb-4">Get in Touch</p>
+                    <button class="w-full bg-tech-blue/20 hover:bg-tech-blue/30 text-tech-blue py-2 px-4 rounded-xl transition-all">
+                        <i class="fas fa-paper-plane mr-2"></i>发送消息
+                    </button>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="md:col-span-2 lg:col-span-4 xl:col-span-3 gradient-border glass-effect rounded-3xl p-6">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-trophy text-tech-orange text-xl mr-3"></i>
+                    <h3 class="text-xl font-bold">成就亮点</h3>
+                    <span class="text-sm text-gray-500 ml-2">Achievements</span>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="flex items-center p-4 bg-white/5 rounded-xl">
+                        <div class="w-12 h-12 bg-tech-blue/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-users text-tech-blue"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">团队领导</h4>
+                            <p class="text-sm text-gray-400">Lead 10+ engineers</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-4 bg-white/5 rounded-xl">
+                        <div class="w-12 h-12 bg-tech-green/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-chart-line text-tech-green"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">性能优化</h4>
+                            <p class="text-sm text-gray-400">40% improvement</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-4 bg-white/5 rounded-xl">
+                        <div class="w-12 h-12 bg-tech-purple/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-award text-tech-purple"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">技术专利</h4>
+                            <p class="text-sm text-gray-400">3 patents filed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Status -->
+            <div class="md:col-span-1 lg:col-span-2 xl:col-span-2 gradient-border glass-effect rounded-3xl p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-3 h-3 bg-tech-green rounded-full mr-3 animate-pulse"></div>
+                    <h3 class="text-xl font-bold">当前状态</h3>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <i class="fas fa-laptop-code text-tech-blue mr-3"></i>
+                        <span class="text-gray-300">开发中新项目</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-book-open text-tech-purple mr-3"></i>
+                        <span class="text-gray-300">学习新技术</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-handshake text-tech-green mr-3"></i>
+                        <span class="text-gray-300">寻求合作机会</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="md:col-span-2 lg:col-span-2 xl:col-span-1 gradient-border glass-effect rounded-3xl p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-clock text-tech-orange text-xl mr-3"></i>
+                    <h3 class="text-xl font-bold">时间线</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="w-3 h-3 bg-tech-blue rounded-full mt-2 mr-3"></div>
+                        <div>
+                            <p class="font-semibold text-sm">2024</p>
+                            <p class="text-xs text-gray-400">创业项目启动</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="w-3 h-3 bg-tech-purple rounded-full mt-2 mr-3"></div>
+                        <div>
+                            <p class="font-semibold text-sm">2020-2023</p>
+                            <p class="text-xs text-gray-400">大厂技术专家</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="w-3 h-3 bg-tech-green rounded-full mt-2 mr-3"></div>
+                        <div>
+                            <p class="font-semibold text-sm">2018-2020</p>
+                            <p class="text-xs text-gray-400">高级开发工程师</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 text-center">
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="#" class="w-12 h-12 bg-white/10 hover:bg-tech-blue/20 rounded-full flex items-center justify-center transition-all hover:scale-110">
+                    <i class="fab fa-github text-xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 bg-white/10 hover:bg-tech-blue/20 rounded-full flex items-center justify-center transition-all hover:scale-110">
+                    <i class="fab fa-linkedin text-xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 bg-white/10 hover:bg-tech-blue/20 rounded-full flex items-center justify-center transition-all hover:scale-110">
+                    <i class="fas fa-envelope text-xl"></i>
+                </a>
+            </div>
+            <p class="text-gray-500 text-sm">
+                © 2024 俊哥 Jun Ge. Crafted with passion and technology.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Skills Chart
+        const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+        new Chart(skillsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Frontend', 'Backend', 'DevOps', 'AI/ML'],
+                datasets: [{
+                    data: [35, 30, 20, 15],
+                    backgroundColor: [
+                        'rgba(0, 122, 255, 0.8)',
+                        'rgba(52, 199, 89, 0.8)',
+                        'rgba(255, 149, 0, 0.8)',
+                        'rgba(88, 86, 214, 0.8)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Performance Chart
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(performanceCtx, {
+            type: 'line',
+            data: {
+                labels: ['2020', '2021', '2022', '2023', '2024'],
+                datasets: [{
+                    label: '技能增长',
+                    data: [65, 75, 82, 90, 95],
+                    borderColor: 'rgba(0, 122, 255, 1)',
+                    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Add scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all grid items
+        document.querySelectorAll('.grid > div').forEach(item => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(20px)';
+            item.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(item);
+        });
+
+        // Add dynamic time
+        setInterval(() => {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.title = `俊哥 - ${timeString}`;
+        }, 1000);
+    </script>
+</body>
+</html>

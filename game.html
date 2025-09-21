@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔨 超级打地鼠 - 解压大师</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fredoka One', cursive;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #6c5ce7 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(90deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            backdrop-filter: blur(20px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .game-title {
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-board {
+            display: flex;
+            gap: 20px;
+            font-size: 16px;
+        }
+
+        .score-item {
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            min-width: 80px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .timer {
+            background: linear-gradient(135deg, #ff6b6b, #ff5252);
+            color: white;
+        }
+
+        .game-area {
+            flex: 1;
+            position: relative;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mole-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            width: 100%;
+            height: 480px;
+        }
+
+        .hole {
+            position: relative;
+            background: radial-gradient(circle at center, #8b4513 0%, #654321 50%, #3e2723 100%);
+            border-radius: 50%;
+            border: 8px solid #5d4037;
+            box-shadow:
+                inset 0 10px 20px rgba(0,0,0,0.5),
+                0 4px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .hole:hover {
+            transform: scale(1.05);
+        }
+
+        .hole::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, #2c1810 0%, #1a0f08 100%);
+            border-radius: 50%;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.8);
+        }
+
+        .mole {
+            position: absolute;
+            bottom: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 100px;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .mole.visible {
+            bottom: 20%;
+        }
+
+        .mole-body {
+            width: 60px;
+            height: 70px;
+            background: linear-gradient(135deg, #8d6e63 0%, #5d4037 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            margin: 0 auto;
+            box-shadow:
+                0 5px 15px rgba(0,0,0,0.3),
+                inset 0 2px 5px rgba(255,255,255,0.2);
+        }
+
+        .mole-face {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 60%;
+        }
+
+        .mole-eyes {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 0 8px;
+        }
+
+        .mole-eye {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .mole-pupil {
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .mole-nose {
+            width: 6px;
+            height: 6px;
+            background: #ff69b4;
+            border-radius: 50%;
+            margin: 0 auto 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .mole-mouth {
+            width: 16px;
+            height: 8px;
+            border: 2px solid #333;
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+            margin: 0 auto;
+        }
+
+        .mole-ears {
+            position: absolute;
+            top: 10%;
+            width: 100%;
+        }
+
+        .mole-ear {
+            width: 20px;
+            height: 15px;
+            background: linear-gradient(135deg, #a1887f, #6d4c41);
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .mole-ear.left {
+            left: -5px;
+            transform: rotate(-20deg);
+        }
+
+        .mole-ear.right {
+            right: -5px;
+            transform: rotate(20deg);
+        }
+
+        /* 地鼠类型 */
+        .mole.golden .mole-body {
+            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+            box-shadow:
+                0 5px 15px rgba(255,215,0,0.4),
+                inset 0 2px 5px rgba(255,255,255,0.3),
+                0 0 20px rgba(255,215,0,0.3);
+        }
+
+        .mole.speed .mole-body {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            animation: speedMoleGlow 0.5s ease-in-out infinite alternate;
+        }
+
+        .mole.bomb .mole-body {
+            background: linear-gradient(135deg, #333 0%, #000 100%);
+            position: relative;
+        }
+
+        .mole.bomb::after {
+            content: '💣';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            animation: bombPulse 1s ease-in-out infinite;
+        }
+
+        .mole.rainbow .mole-body {
+            background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 300% 300%;
+            animation: rainbowShift 2s ease-in-out infinite;
+        }
+
+        @keyframes speedMoleGlow {
+            0% { box-shadow: 0 5px 15px rgba(255,68,68,0.4); }
+            100% { box-shadow: 0 5px 25px rgba(255,68,68,0.8), 0 0 30px rgba(255,68,68,0.6); }
+        }
+
+        @keyframes bombPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        @keyframes rainbowShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .tools-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            padding: 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .tool {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .tool:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .tool.active {
+            background: linear-gradient(135deg, #ff6b35, #ff8e53);
+            box-shadow: 0 0 25px rgba(255, 107, 53, 0.6);
+            transform: scale(1.1);
+        }
+
+        .tool::after {
+            content: attr(data-name);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tool:hover::after {
+            opacity: 1;
+        }
+
+        .hit-effect {
+            position: absolute;
+            pointer-events: none;
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6b35;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .powerup {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .powerup.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .combo-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff6b35;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            opacity: 0;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+
+        .game-over.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .game-over h2 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,184,148,0.4);
+        }
+
+        .audio-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .audio-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.2));
+        }
+
+        .audio-btn.muted {
+            background: linear-gradient(135deg, #ff6b6b, #ff5252);
+        }
+
+        /* 增强的视觉特效 */
+        .tool-effect-hammer {
+            animation: hammerStrike 0.4s ease-out;
+        }
+
+        .tool-effect-net {
+            animation: netCatch 0.6s ease-out;
+        }
+
+        .tool-effect-glove {
+            animation: punchHit 0.3s ease-out;
+        }
+
+        .tool-effect-magic {
+            animation: magicSparkle 0.8s ease-out;
+        }
+
+        .tool-effect-freeze {
+            animation: freezeBlast 0.5s ease-out;
+        }
+
+        @keyframes hammerStrike {
+            0% { transform: translateX(-50%) scale(1) rotate(0deg); }
+            50% { transform: translateX(-50%) scale(1.2) rotate(-15deg); }
+            100% { transform: translateX(-50%) scale(1) rotate(0deg); }
+        }
+
+        @keyframes netCatch {
+            0% { transform: translateX(-50%) scale(1); opacity: 1; }
+            50% { transform: translateX(-50%) scale(1.3); opacity: 0.7; }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+
+        @keyframes punchHit {
+            0% { transform: translateX(-50%) scale(1); }
+            30% { transform: translateX(-50%) scale(0.8); }
+            70% { transform: translateX(-50%) scale(1.3); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        @keyframes magicSparkle {
+            0% { transform: translateX(-50%) scale(1); filter: hue-rotate(0deg); }
+            25% { transform: translateX(-50%) scale(1.1); filter: hue-rotate(90deg); }
+            50% { transform: translateX(-50%) scale(1.2); filter: hue-rotate(180deg); }
+            75% { transform: translateX(-50%) scale(1.1); filter: hue-rotate(270deg); }
+            100% { transform: translateX(-50%) scale(1); filter: hue-rotate(360deg); }
+        }
+
+        @keyframes freezeBlast {
+            0% { transform: translateX(-50%) scale(1); filter: brightness(1); }
+            50% { transform: translateX(-50%) scale(1.1); filter: brightness(2) blur(2px); }
+            100% { transform: translateX(-50%) scale(1); filter: brightness(1); }
+        }
+
+        .screen-shake {
+            animation: screenShake 0.5s ease-in-out;
+        }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0); }
+            10% { transform: translate(-2px, -2px); }
+            20% { transform: translate(2px, -2px); }
+            30% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, -2px); }
+            70% { transform: translate(-2px, 2px); }
+            80% { transform: translate(2px, 2px); }
+            90% { transform: translate(-2px, -2px); }
+        }
+
+        @keyframes moleHit {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(0.8) rotate(10deg); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        @keyframes holeBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="game-title">
+                🔨 超级打地鼠
+            </div>
+            <div class="score-board">
+                <div class="score-item">
+                    分数<br><span id="score">0</span>
+                </div>
+                <div class="score-item">
+                    连击<br><span id="combo">0</span>
+                </div>
+                <div class="score-item">
+                    等级<br><span id="level">1</span>
+                </div>
+                <div class="score-item timer">
+                    时间<br><span id="timer">60</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="audio-controls">
+                <button class="audio-btn" id="musicBtn" title="背景音乐">🎵</button>
+                <button class="audio-btn" id="soundBtn" title="音效">🔊</button>
+            </div>
+
+            <div class="mole-grid" id="moleGrid">
+                <!-- 12个洞会通过JavaScript生成 -->
+            </div>
+
+            <div class="tools-panel">
+                <button class="tool active" data-tool="hammer" data-name="锤子">🔨</button>
+                <button class="tool" data-tool="net" data-name="网子">🕸️</button>
+                <button class="tool" data-tool="glove" data-name="拳套">🥊</button>
+                <button class="tool" data-tool="magic" data-name="魔法">✨</button>
+                <button class="tool" data-tool="freeze" data-name="冰冻">❄️</button>
+            </div>
+
+            <div class="powerup" id="powerup"></div>
+            <div class="combo-display" id="comboDisplay"></div>
+            <div class="particles" id="particles"></div>
+        </div>
+
+        <div class="game-over" id="gameOver">
+            <h2>游戏结束！</h2>
+            <div>最终分数: <span id="finalScore">0</span></div>
+            <div>最高连击: <span id="maxCombo">0</span></div>
+            <button class="restart-btn" onclick="game.restart()">重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        class AudioManager {
+            constructor() {
+                this.musicEnabled = true;
+                this.soundEnabled = true;
+                this.audioContext = null;
+                this.backgroundMusic = null;
+                this.soundEffects = {};
+
+                this.initializeAudio();
+                this.setupAudioControls();
+            }
+
+            initializeAudio() {
+                // 创建音频上下文
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Web Audio API not supported');
+                }
+
+                // 预加载背景音乐（使用Web Audio API合成）
+                this.createBackgroundMusic();
+
+                // 预加载音效
+                this.createSoundEffects();
+            }
+
+            createBackgroundMusic() {
+                if (!this.audioContext) return;
+
+                // 创建一个简单的背景音乐循环
+                const createTone = (frequency, duration, startTime) => {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+
+                    oscillator.frequency.setValueAtTime(frequency, startTime);
+                    gainNode.gain.setValueAtTime(0.1, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                };
+
+                this.playBackgroundMusic = () => {
+                    if (!this.musicEnabled || !this.audioContext) return;
+
+                    const melody = [
+                        {freq: 523.25, duration: 0.5}, // C5
+                        {freq: 587.33, duration: 0.5}, // D5
+                        {freq: 659.25, duration: 0.5}, // E5
+                        {freq: 523.25, duration: 0.5}, // C5
+                        {freq: 698.46, duration: 1.0}, // F5
+                        {freq: 659.25, duration: 1.0}, // E5
+                    ];
+
+                    const now = this.audioContext.currentTime;
+                    let timeOffset = 0;
+
+                    melody.forEach(note => {
+                        createTone(note.freq, note.duration, now + timeOffset);
+                        timeOffset += note.duration + 0.1;
+                    });
+
+                    // 循环播放
+                    setTimeout(() => {
+                        if (this.musicEnabled) this.playBackgroundMusic();
+                    }, (timeOffset + 2) * 1000);
+                };
+            }
+
+            createSoundEffects() {
+                this.soundEffects = {
+                    hammer: () => this.createImpactSound(150, 0.1),
+                    net: () => this.createSwishSound(),
+                    glove: () => this.createPunchSound(),
+                    magic: () => this.createMagicSound(),
+                    freeze: () => this.createFreezeSound(),
+
+                    moleNormal: () => this.createMoleSound(300),
+                    moleGolden: () => this.createChimeSound(),
+                    moleSpeed: () => this.createZoomSound(),
+                    moleBomb: () => this.createExplosionSound(),
+                    moleRainbow: () => this.createPowerUpSound(),
+
+                    combo: () => this.createComboSound(),
+                    levelUp: () => this.createLevelUpSound(),
+                    powerUp: () => this.createPowerUpSound(),
+                    gameOver: () => this.createGameOverSound()
+                };
+            }
+
+            createImpactSound(frequency, duration) {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(50, this.audioContext.currentTime + duration);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, this.audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + duration);
+            }
+
+            createSwishSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const noise = this.audioContext.createBufferSource();
+                const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.3, this.audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < data.length; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.1;
+                }
+
+                noise.buffer = buffer;
+                const gainNode = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+
+                noise.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                filter.type = 'highpass';
+                filter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.3);
+
+                noise.start();
+                noise.stop(this.audioContext.currentTime + 0.3);
+            }
+
+            createPunchSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(80, this.audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(40, this.audioContext.currentTime + 0.15);
+
+                gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.15);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.15);
+            }
+
+            createMagicSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const frequencies = [523.25, 659.25, 783.99, 1046.50];
+                frequencies.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+
+                        gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.3);
+
+                        oscillator.start();
+                        oscillator.stop(this.audioContext.currentTime + 0.3);
+                    }, index * 50);
+                });
+            }
+
+            createFreezeSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+                oscillator.frequency.linearRampToValueAtTime(200, this.audioContext.currentTime + 0.5);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, this.audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.5);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.5);
+            }
+
+            createMoleSound(frequency) {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.2);
+            }
+
+            createChimeSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                [523.25, 659.25, 783.99].forEach((freq, index) => {
+                    setTimeout(() => {
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+
+                        gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 1);
+
+                        oscillator.start();
+                        oscillator.stop(this.audioContext.currentTime + 1);
+                    }, index * 100);
+                });
+            }
+
+            createZoomSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 0.1);
+
+                gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.1);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.1);
+            }
+
+            createExplosionSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const noise = this.audioContext.createBufferSource();
+                const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.5, this.audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < data.length; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.3;
+                }
+
+                noise.buffer = buffer;
+                const gainNode = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+
+                noise.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(200, this.audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.5);
+
+                noise.start();
+                noise.stop(this.audioContext.currentTime + 0.5);
+            }
+
+            createPowerUpSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const frequencies = [261.63, 329.63, 392.00, 523.25, 659.25];
+                frequencies.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+
+                        oscillator.type = 'square';
+                        oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+
+                        gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
+
+                        oscillator.start();
+                        oscillator.stop(this.audioContext.currentTime + 0.2);
+                    }, index * 80);
+                });
+            }
+
+            createComboSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(880, this.audioContext.currentTime + 0.2);
+
+                gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.2);
+            }
+
+            createLevelUpSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const frequencies = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                frequencies.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+
+                        gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.5);
+
+                        oscillator.start();
+                        oscillator.stop(this.audioContext.currentTime + 0.5);
+                    }, index * 100);
+                });
+            }
+
+            createGameOverSound() {
+                if (!this.soundEnabled || !this.audioContext) return;
+
+                const frequencies = [523.25, 493.88, 440.00, 392.00, 349.23];
+                frequencies.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+
+                        gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.8);
+
+                        oscillator.start();
+                        oscillator.stop(this.audioContext.currentTime + 0.8);
+                    }, index * 300);
+                });
+            }
+
+            setupAudioControls() {
+                const musicBtn = document.getElementById('musicBtn');
+                const soundBtn = document.getElementById('soundBtn');
+
+                musicBtn.addEventListener('click', () => {
+                    this.musicEnabled = !this.musicEnabled;
+                    musicBtn.classList.toggle('muted', !this.musicEnabled);
+                    musicBtn.textContent = this.musicEnabled ? '🎵' : '🔇';
+                });
+
+                soundBtn.addEventListener('click', () => {
+                    this.soundEnabled = !this.soundEnabled;
+                    soundBtn.classList.toggle('muted', !this.soundEnabled);
+                    soundBtn.textContent = this.soundEnabled ? '🔊' : '🔇';
+                });
+            }
+
+            playSound(soundName) {
+                if (this.soundEffects[soundName]) {
+                    this.soundEffects[soundName]();
+                }
+            }
+
+            startBackgroundMusic() {
+                if (this.playBackgroundMusic) {
+                    this.playBackgroundMusic();
+                }
+            }
+
+            resumeAudioContext() {
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+            }
+        }
+
+        class SuperWhackAMole {
+            constructor() {
+                this.score = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.level = 1;
+                this.timeLeft = 60;
+                this.currentTool = 'hammer';
+                this.gameActive = false;
+                this.moles = [];
+                this.powerups = {
+                    doubleScore: false,
+                    slowTime: false,
+                    freeze: false
+                };
+
+                this.audioManager = new AudioManager();
+
+                this.moleTypes = {
+                    normal: { score: 10, duration: 2000, color: 'normal' },
+                    golden: { score: 50, duration: 1500, color: 'golden' },
+                    speed: { score: 20, duration: 800, color: 'speed' },
+                    bomb: { score: -20, duration: 3000, color: 'bomb' },
+                    rainbow: { score: 100, duration: 1000, color: 'rainbow' }
+                };
+
+                this.tools = {
+                    hammer: { multiplier: 1, special: null },
+                    net: { multiplier: 0.8, special: 'catchAll' },
+                    glove: { multiplier: 1.2, special: 'combo' },
+                    magic: { multiplier: 1.5, special: 'transform' },
+                    freeze: { multiplier: 0.9, special: 'freeze' }
+                };
+
+                this.initializeGame();
+            }
+
+            initializeGame() {
+                this.createMoleGrid();
+                this.setupEventListeners();
+                this.startGame();
+            }
+
+            createMoleGrid() {
+                const grid = document.getElementById('moleGrid');
+                grid.innerHTML = '';
+
+                for (let i = 0; i < 12; i++) {
+                    const hole = document.createElement('div');
+                    hole.className = 'hole';
+                    hole.dataset.index = i;
+
+                    const mole = document.createElement('div');
+                    mole.className = 'mole';
+                    mole.innerHTML = `
+                        <div class="mole-ears">
+                            <div class="mole-ear left"></div>
+                            <div class="mole-ear right"></div>
+                        </div>
+                        <div class="mole-body">
+                            <div class="mole-face">
+                                <div class="mole-eyes">
+                                    <div class="mole-eye">
+                                        <div class="mole-pupil"></div>
+                                    </div>
+                                    <div class="mole-eye">
+                                        <div class="mole-pupil"></div>
+                                    </div>
+                                </div>
+                                <div class="mole-nose"></div>
+                                <div class="mole-mouth"></div>
+                            </div>
+                        </div>
+                    `;
+
+                    mole.addEventListener('click', (e) => this.hitMole(e, i));
+                    hole.appendChild(mole);
+                    grid.appendChild(hole);
+
+                    this.moles.push({
+                        element: mole,
+                        hole: hole,
+                        visible: false,
+                        type: 'normal',
+                        timeout: null
+                    });
+                }
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.tool').forEach(tool => {
+                    tool.addEventListener('click', (e) => {
+                        document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentTool = e.target.dataset.tool;
+                        this.showPowerup(`切换到${e.target.dataset.name}！`);
+                    });
+                });
+            }
+
+            startGame() {
+                this.gameActive = true;
+                this.audioManager.resumeAudioContext();
+                this.audioManager.startBackgroundMusic();
+                this.startTimer();
+                this.spawnMoles();
+            }
+
+            startTimer() {
+                const timer = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('timer').textContent = this.timeLeft;
+
+                    if (this.timeLeft <= 0) {
+                        clearInterval(timer);
+                        this.endGame();
+                    }
+                }, 1000);
+            }
+
+            spawnMoles() {
+                if (!this.gameActive) return;
+
+                const availableHoles = this.moles.filter(mole => !mole.visible);
+                if (availableHoles.length === 0) {
+                    setTimeout(() => this.spawnMoles(), 500);
+                    return;
+                }
+
+                const numMoles = Math.min(
+                    Math.floor(Math.random() * 3) + 1,
+                    availableHoles.length
+                );
+
+                for (let i = 0; i < numMoles; i++) {
+                    const randomHole = availableHoles[Math.floor(Math.random() * availableHoles.length)];
+                    const moleType = this.getRandomMoleType();
+
+                    this.showMole(randomHole, moleType);
+                    availableHoles.splice(availableHoles.indexOf(randomHole), 1);
+                }
+
+                const spawnDelay = Math.max(500, 2000 - (this.level * 100));
+                setTimeout(() => this.spawnMoles(), spawnDelay);
+            }
+
+            getRandomMoleType() {
+                const rand = Math.random();
+                if (rand < 0.6) return 'normal';
+                if (rand < 0.75) return 'speed';
+                if (rand < 0.85) return 'golden';
+                if (rand < 0.95) return 'rainbow';
+                return 'bomb';
+            }
+
+            showMole(mole, type) {
+                if (mole.visible) return;
+
+                mole.visible = true;
+                mole.type = type;
+                mole.element.className = `mole visible ${type}`;
+
+                const duration = this.moleTypes[type].duration;
+
+                mole.timeout = setTimeout(() => {
+                    this.hideMole(mole);
+                    this.resetCombo();
+                }, duration);
+            }
+
+            hideMole(mole) {
+                if (!mole.visible) return;
+
+                mole.visible = false;
+                mole.element.classList.remove('visible');
+
+                if (mole.timeout) {
+                    clearTimeout(mole.timeout);
+                    mole.timeout = null;
+                }
+
+                setTimeout(() => {
+                    mole.element.className = 'mole';
+                }, 300);
+            }
+
+            hitMole(e, index) {
+                e.stopPropagation();
+                const mole = this.moles[index];
+
+                if (!mole.visible || !this.gameActive) return;
+
+                const moleType = mole.type;
+                const tool = this.tools[this.currentTool];
+
+                // 播放工具音效
+                this.audioManager.playSound(this.currentTool);
+
+                // 播放地鼠音效
+                this.audioManager.playSound(`mole${moleType.charAt(0).toUpperCase() + moleType.slice(1)}`);
+
+                this.applyToolEffect(mole, tool);
+                this.calculateScore(moleType, tool);
+                this.createHitEffect(e, moleType);
+                this.createParticles(e, moleType);
+
+                // 应用不同工具的视觉特效
+                mole.element.classList.add(`tool-effect-${this.currentTool}`);
+                mole.hole.style.animation = 'holeBounce 0.3s ease-in-out';
+
+                // 特殊工具的屏幕特效
+                if (this.currentTool === 'freeze' || moleType === 'bomb') {
+                    document.body.classList.add('screen-shake');
+                    setTimeout(() => {
+                        document.body.classList.remove('screen-shake');
+                    }, 500);
+                }
+
+                setTimeout(() => {
+                    mole.element.classList.remove(`tool-effect-${this.currentTool}`);
+                    mole.hole.style.animation = '';
+                }, 800);
+
+                this.hideMole(mole);
+                this.updateDisplay();
+            }
+
+            applyToolEffect(mole, tool) {
+                switch (tool.special) {
+                    case 'catchAll':
+                        this.moles.forEach(m => {
+                            if (m.visible && m !== mole) {
+                                this.hideMole(m);
+                                this.score += this.moleTypes[m.type].score * 0.5;
+                                this.audioManager.playSound('net');
+                            }
+                        });
+                        this.showPowerup('网子特效：捕获所有地鼠！');
+                        this.audioManager.playSound('powerUp');
+                        break;
+
+                    case 'freeze':
+                        this.powerups.freeze = true;
+                        setTimeout(() => this.powerups.freeze = false, 3000);
+                        this.showPowerup('冰冻特效：地鼠减速3秒！');
+                        this.audioManager.playSound('powerUp');
+                        break;
+
+                    case 'transform':
+                        if (mole.type === 'bomb') {
+                            mole.type = 'golden';
+                            mole.element.className = 'mole visible golden';
+                            this.showPowerup('魔法特效：炸弹变金币！');
+                            this.audioManager.playSound('powerUp');
+                        }
+                        break;
+                }
+            }
+
+            calculateScore(moleType, tool) {
+                let baseScore = this.moleTypes[moleType].score;
+                let multiplier = tool.multiplier;
+
+                if (this.powerups.doubleScore) multiplier *= 2;
+                if (tool.special === 'combo' && this.combo > 0) multiplier *= (1 + this.combo * 0.1);
+
+                const finalScore = Math.floor(baseScore * multiplier);
+
+                if (finalScore > 0) {
+                    this.combo++;
+                    this.score += finalScore;
+
+                    if (this.combo > this.maxCombo) {
+                        this.maxCombo = this.combo;
+                    }
+
+                    if (this.combo >= 10) {
+                        this.showComboEffect();
+                        this.audioManager.playSound('combo');
+                    }
+
+                    if (this.combo % 5 === 0) {
+                        this.triggerPowerup();
+                    }
+                } else {
+                    this.resetCombo();
+                    this.score = Math.max(0, this.score + finalScore);
+                }
+
+                this.checkLevelUp();
+            }
+
+            resetCombo() {
+                this.combo = 0;
+            }
+
+            checkLevelUp() {
+                const newLevel = Math.floor(this.score / 500) + 1;
+                if (newLevel > this.level) {
+                    this.level = newLevel;
+                    this.showPowerup(`等级提升！现在是第 ${this.level} 级！`);
+                    this.audioManager.playSound('levelUp');
+                }
+            }
+
+            triggerPowerup() {
+                const powerups = ['doubleScore', 'slowTime'];
+                const powerup = powerups[Math.floor(Math.random() * powerups.length)];
+
+                this.powerups[powerup] = true;
+
+                const messages = {
+                    doubleScore: '双倍分数激活！',
+                    slowTime: '时间减缓激活！'
+                };
+
+                this.showPowerup(messages[powerup]);
+                this.audioManager.playSound('powerUp');
+
+                setTimeout(() => {
+                    this.powerups[powerup] = false;
+                }, 5000);
+            }
+
+            showComboEffect() {
+                const comboDisplay = document.getElementById('comboDisplay');
+                comboDisplay.textContent = `${this.combo}x 连击！`;
+                comboDisplay.style.opacity = 1;
+                comboDisplay.style.transform = 'translate(-50%, -50%) scale(1.2)';
+
+                setTimeout(() => {
+                    comboDisplay.style.opacity = 0;
+                    comboDisplay.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 1000);
+            }
+
+            showPowerup(text) {
+                const powerup = document.getElementById('powerup');
+                powerup.textContent = text;
+                powerup.classList.add('show');
+
+                setTimeout(() => {
+                    powerup.classList.remove('show');
+                }, 2000);
+            }
+
+            createHitEffect(e, moleType) {
+                const effect = document.createElement('div');
+                effect.className = 'hit-effect';
+
+                const messages = {
+                    normal: '+10',
+                    golden: '+50 ✨',
+                    speed: '+20 ⚡',
+                    bomb: '-20 💥',
+                    rainbow: '+100 🌈'
+                };
+
+                effect.textContent = messages[moleType];
+                effect.style.left = e.clientX + 'px';
+                effect.style.top = e.clientY + 'px';
+
+                document.body.appendChild(effect);
+
+                let y = 0;
+                let opacity = 1;
+
+                const animate = () => {
+                    y -= 3;
+                    opacity -= 0.02;
+
+                    effect.style.transform = `translateY(${y}px)`;
+                    effect.style.opacity = opacity;
+
+                    if (opacity > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        document.body.removeChild(effect);
+                    }
+                };
+
+                animate();
+            }
+
+            createParticles(e, moleType) {
+                const colors = {
+                    normal: ['#8d6e63', '#5d4037', '#a1887f'],
+                    golden: ['#ffd700', '#ffb300', '#fff59d'],
+                    speed: ['#ff4444', '#cc0000', '#ff8a80'],
+                    bomb: ['#333', '#000', '#666', '#ff4444'],
+                    rainbow: ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3']
+                };
+
+                const particleColors = colors[moleType] || colors.normal;
+                const particles = document.getElementById('particles');
+                const particleCount = moleType === 'bomb' ? 25 : moleType === 'rainbow' ? 20 : 15;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = e.clientX + 'px';
+                    particle.style.top = e.clientY + 'px';
+                    particle.style.background = particleColors[Math.floor(Math.random() * particleColors.length)];
+
+                    // 不同类型的粒子大小
+                    const size = moleType === 'golden' ? 10 : moleType === 'rainbow' ? 8 : 6;
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+
+                    // 炸弹类型添加阴影效果
+                    if (moleType === 'bomb') {
+                        particle.style.boxShadow = '0 0 10px rgba(255,68,68,0.8)';
+                    }
+
+                    particles.appendChild(particle);
+
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const velocity = moleType === 'speed' ? 6 : moleType === 'bomb' ? 8 : 4;
+                    const velocityVariation = Math.random() * 4;
+                    let x = 0;
+                    let y = 0;
+                    let opacity = 1;
+                    let scale = 1;
+
+                    const animate = () => {
+                        x += Math.cos(angle) * (velocity + velocityVariation);
+                        y += Math.sin(angle) * (velocity + velocityVariation) + 0.8;
+                        opacity -= moleType === 'golden' ? 0.01 : 0.015;
+                        scale -= 0.01;
+
+                        particle.style.transform = `translate(${x}px, ${y}px) scale(${Math.max(0, scale)})`;
+                        particle.style.opacity = opacity;
+
+                        if (opacity > 0 && scale > 0) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            particles.removeChild(particle);
+                        }
+                    };
+
+                    animate();
+                }
+
+                // 为特殊类型添加额外特效
+                if (moleType === 'rainbow') {
+                    this.createRainbowRing(e);
+                } else if (moleType === 'golden') {
+                    this.createGoldenSparkle(e);
+                } else if (moleType === 'bomb') {
+                    this.createShockwave(e);
+                }
+            }
+
+            createRainbowRing(e) {
+                const ring = document.createElement('div');
+                ring.style.position = 'absolute';
+                ring.style.left = e.clientX + 'px';
+                ring.style.top = e.clientY + 'px';
+                ring.style.width = '20px';
+                ring.style.height = '20px';
+                ring.style.border = '3px solid transparent';
+                ring.style.borderRadius = '50%';
+                ring.style.background = 'linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)';
+                ring.style.transform = 'translate(-50%, -50%)';
+                ring.style.pointerEvents = 'none';
+                ring.style.zIndex = '100';
+
+                document.body.appendChild(ring);
+
+                let scale = 1;
+                let opacity = 1;
+
+                const animate = () => {
+                    scale += 0.1;
+                    opacity -= 0.02;
+
+                    ring.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                    ring.style.opacity = opacity;
+
+                    if (opacity > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        document.body.removeChild(ring);
+                    }
+                };
+
+                animate();
+            }
+
+            createGoldenSparkle(e) {
+                for (let i = 0; i < 8; i++) {
+                    setTimeout(() => {
+                        const sparkle = document.createElement('div');
+                        sparkle.style.position = 'absolute';
+                        sparkle.style.left = (e.clientX + Math.random() * 40 - 20) + 'px';
+                        sparkle.style.top = (e.clientY + Math.random() * 40 - 20) + 'px';
+                        sparkle.style.width = '4px';
+                        sparkle.style.height = '4px';
+                        sparkle.style.background = '#ffd700';
+                        sparkle.style.borderRadius = '50%';
+                        sparkle.style.boxShadow = '0 0 10px #ffd700';
+                        sparkle.style.pointerEvents = 'none';
+                        sparkle.style.zIndex = '100';
+
+                        document.body.appendChild(sparkle);
+
+                        let opacity = 1;
+                        let y = 0;
+
+                        const animate = () => {
+                            y -= 2;
+                            opacity -= 0.05;
+
+                            sparkle.style.transform = `translateY(${y}px)`;
+                            sparkle.style.opacity = opacity;
+
+                            if (opacity > 0) {
+                                requestAnimationFrame(animate);
+                            } else {
+                                document.body.removeChild(sparkle);
+                            }
+                        };
+
+                        animate();
+                    }, i * 100);
+                }
+            }
+
+            createShockwave(e) {
+                const shockwave = document.createElement('div');
+                shockwave.style.position = 'absolute';
+                shockwave.style.left = e.clientX + 'px';
+                shockwave.style.top = e.clientY + 'px';
+                shockwave.style.width = '10px';
+                shockwave.style.height = '10px';
+                shockwave.style.border = '2px solid #ff4444';
+                shockwave.style.borderRadius = '50%';
+                shockwave.style.transform = 'translate(-50%, -50%)';
+                shockwave.style.pointerEvents = 'none';
+                shockwave.style.zIndex = '100';
+
+                document.body.appendChild(shockwave);
+
+                let scale = 1;
+                let opacity = 1;
+
+                const animate = () => {
+                    scale += 0.2;
+                    opacity -= 0.03;
+
+                    shockwave.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                    shockwave.style.opacity = opacity;
+                    shockwave.style.borderColor = `rgba(255, 68, 68, ${opacity})`;
+
+                    if (opacity > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        document.body.removeChild(shockwave);
+                    }
+                };
+
+                animate();
+            }
+
+            updateDisplay() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('combo').textContent = this.combo;
+                document.getElementById('level').textContent = this.level;
+            }
+
+            endGame() {
+                this.gameActive = false;
+
+                this.moles.forEach(mole => {
+                    if (mole.timeout) {
+                        clearTimeout(mole.timeout);
+                    }
+                    this.hideMole(mole);
+                });
+
+                this.audioManager.playSound('gameOver');
+
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('maxCombo').textContent = this.maxCombo;
+                document.getElementById('gameOver').classList.add('show');
+            }
+
+            restart() {
+                this.score = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.level = 1;
+                this.timeLeft = 60;
+                this.gameActive = false;
+
+                Object.keys(this.powerups).forEach(key => {
+                    this.powerups[key] = false;
+                });
+
+                document.getElementById('gameOver').classList.remove('show');
+                this.updateDisplay();
+
+                setTimeout(() => {
+                    this.startGame();
+                }, 500);
+            }
+        }
+
+        // 启动游戏
+        let game;
+        window.addEventListener('DOMContentLoaded', () => {
+            game = new SuperWhackAMole();
+        });
+    </script>
+</body>
+</html>
